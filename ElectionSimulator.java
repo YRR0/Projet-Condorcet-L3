@@ -16,7 +16,7 @@ public class ElectionSimulator {
         List<List<String>> ballots = simulateRandomVotes(candidates, numVoters);
         
         List<String> prefGlobal = calculateGlobalPreferences(candidates, numVoters, ballots);
-        System.out.println(" Voici la prederence Global selon les votants ");
+        System.out.println(" Voici la preference Global selon les votants ");
         for(String a : prefGlobal) System.out.print(a+" ");
         System.out.println();
 
