@@ -28,16 +28,28 @@ public class ElectionSimulator {
 
         String condorcetWinner = findCondorcetWinner(candidates, numVoters, voters);
 
-        System.out.println("Gagnant selon le critère de Condorcet : " + condorcetWinner+"\n");
+        System.out.println("\nGagnant selon le critère de Condorcet : " + condorcetWinner+"\n");
+        
+
         
 
         // Vote Uninominal à un Tour
         String pluralityWinner = runPluralityVote(candidates, numVoters, voters);
-        System.out.println("Gagnant selon le vote uninominal à un tour : " + pluralityWinner+"\n");
+        System.out.println("\nGagnant selon le vote uninominal à un tour : " + pluralityWinner+"\n");
+        System.out.println("Le critère de Condorcet a-t-il été respecté? " + isCondorcet(pluralityWinner,condorcetWinner)+"\n");
+        
 
         // Vote Alternatif (Vote par Classement) qui respecte le critère de Condorcet
         String rankedVoteWinner = runRankedVote(candidates, numVoters, voters);
-        System.out.println("Gagnant selon le vote alternatif : " + rankedVoteWinner+"\n");
+        System.out.println("\nGagnant selon le vote alternatif : " + rankedVoteWinner+"\n");
+        System.out.println("Le critère de Condorcet a-t-il été respecté? " + isCondorcet(rankedVoteWinner,condorcetWinner)+"\n");
+    }
+    public static String isCondorcet(String winner, String condorcet){
+            if(condorcet==winner){
+                return "Oui";
+            }else{
+                return "Non";
+            }
     }
 
     private static List<Votant> simulateVoters(List<String> candidates, int numVoters) {
