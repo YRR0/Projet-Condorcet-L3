@@ -28,7 +28,16 @@ public class ElectionSimulator {
 
         String condorcetWinner = findCondorcetWinner(candidates, numVoters, voters);
 
-        System.out.println("Gagnant selon le critère de Condorcet : " + condorcetWinner);
+        System.out.println("Gagnant selon le critère de Condorcet : " + condorcetWinner+"\n");
+        
+
+        // Vote Uninominal à un Tour
+        String pluralityWinner = runPluralityVote(candidates, numVoters, voters);
+        System.out.println("Gagnant selon le vote uninominal à un tour : " + pluralityWinner+"\n");
+
+        // Vote Alternatif (Vote par Classement) qui respecte le critère de Condorcet
+        String rankedVoteWinner = runRankedVote(candidates, numVoters, voters);
+        System.out.println("Gagnant selon le vote alternatif : " + rankedVoteWinner+"\n");
     }
 
     private static List<Votant> simulateVoters(List<String> candidates, int numVoters) {
@@ -64,6 +73,8 @@ public class ElectionSimulator {
         return globalPreferences;
     }
 
+    //  comparer les préférences de chaque votant pour chaque paire de candidats, 
+    //et le candidat qui remporte le plus grand nombre de duels est déclaré gagnant selon le critère de Condorcet.
     private static String findCondorcetWinner(List<String> candidates, int numVoters, List<Votant> voters) {
         Map<String, Integer> wins = new HashMap<>();
 
@@ -86,6 +97,10 @@ public class ElectionSimulator {
             System.out.println("Nombre de votes pour " + cand + ": " + wins.get(cand));
         }
 
+        // Affichage des votes de chaque candidat selon les préférences
+        displayHistogram(wins);
+        displayPairwiseComparisons(wins);
+
         return wins.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -103,4 +118,82 @@ public class ElectionSimulator {
             wins.put(candidate2, wins.get(candidate2) + 1);
         }
     }
+
+    private static void displayHistogram(Map<String, Integer> wins) {
+        int maxLength = wins.values().stream().mapToInt(Integer::intValue).max().orElse(0);
+    
+        for (String candidate : wins.keySet()) {
+            int count = wins.get(candidate);
+            int barLength = (int) ((double) count / maxLength * 50); // 50 is the maximum width
+    
+            System.out.printf("%s: %d ", candidate, count);
+            for (int i = 0; i < barLength; i++) {
+                System.out.print("*");
+            }
+            System.out.println();
+        }
+    }
+
+    private static void displayPairwiseComparisons(Map<String, Integer> wins) {
+        for (String candidate1 : wins.keySet()) {
+            for (String candidate2 : wins.keySet()) {
+                if (!candidate1.equals(candidate2)) {
+                    int count1 = wins.get(candidate1);
+                    int count2 = wins.get(candidate2);
+                    System.out.printf("%d préfèrent %s > %s contre %d pour %s > %s\n",
+                            count1, candidate1, candidate2, count2, candidate2, candidate1);
+                }
+            }
+        }
+    }
+    private static String runPluralityVote(List<String> candidates, int numVoters, List<Votant> voters) {
+        Map<String, Integer> votes = new HashMap<>();
+    
+        for (String candidate : candidates) {
+            votes.put(candidate, 0);
+        }
+    
+        for (Votant voter : voters) {
+            String topChoice = voter.getPreferences().get(0);
+            votes.put(topChoice, votes.get(topChoice) + 1);
+        }
+    
+        System.out.println("Résultats du vote uninominal à un tour :");
+        for (String candidate : candidates) {
+            System.out.println(candidate + ": " + votes.get(candidate) + " votes");
+        }
+    
+        return votes.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+    
+    private static String runRankedVote(List<String> candidates, int numVoters, List<Votant> voters) {
+        Map<String, Integer> points = new HashMap<>();
+    
+        for (String candidate : candidates) {
+            points.put(candidate, 0);
+        }
+    
+        for (Votant voter : voters) {
+            List<String> voterPreferences = voter.getPreferences();
+    
+            for (int i = 0; i < candidates.size(); i++) {
+                String candidate = voterPreferences.get(i);
+                points.put(candidate, points.get(candidate) + (numVoters - i));
+            }
+        }
+    
+        System.out.println("Résultats du vote alternatif (par classement) :");
+        for (String candidate : candidates) {
+            System.out.println(candidate + ": " + points.get(candidate) + " points");
+        }
+    
+        return points.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+    
 }
